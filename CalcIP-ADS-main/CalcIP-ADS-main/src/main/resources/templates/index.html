@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Calculadora de IP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <style>
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .gradient-bg {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .pulse {
+            animation: pulse 0.5s ease-in-out;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .result-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .green-gradient {
+            background: linear-gradient(135deg, #1a472a 0%, #2d5a3f 100%);
+        }
+        .card-hover {
+            transition: transform 0.2s ease-in-out;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="min-h-screen green-gradient">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-2xl mx-auto">
+            <div class="bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-8 border border-green-100">
+                <h1 class="text-4xl font-bold text-center mb-8 text-green-800">
+                    Calculadora de IP
+                </h1>
+                
+                <div class="space-y-6">
+                    <div class="space-y-2">
+                        <label for="ipAddress" class="block text-sm font-medium text-green-700">Endereço IP:</label>
+                        <input type="text" 
+                               class="w-full px-4 py-2 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/50" 
+                               id="ipAddress" 
+                               name="ipAddress" 
+                               placeholder="ex: 192.168.1.1">
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <label for="subnetMask" class="block text-sm font-medium text-green-700">Máscara de Sub-rede:</label>
+                        <input type="text" 
+                               class="w-full px-4 py-2 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white/50" 
+                               id="subnetMask" 
+                               name="subnetMask" 
+                               placeholder="ex: 255.255.255.0">
+                    </div>
+                </div>
+                
+                <div id="errorMessage" 
+                     class="mt-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg hidden">
+                </div>
+                
+                <div id="results" class="mt-8 hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-white/80 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-green-100 card-hover">
+                            <h4 class="text-xl font-semibold text-green-800 mb-4">Informações da Rede</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-green-700">Classe da Rede:</span>
+                                    <span id="networkClass" class="text-green-600 font-semibold"></span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-green-700">Notação CIDR:</span>
+                                    <span id="cidr" class="text-green-600 font-semibold"></span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-green-700">Endereço de Rede:</span>
+                                    <span id="networkAddress" class="text-green-600 font-semibold"></span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-green-700">Broadcast:</span>
+                                    <span id="broadcastAddress" class="text-green-600 font-semibold"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white/80 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-green-100 card-hover">
+                            <h4 class="text-xl font-semibold text-green-800 mb-4">Informações dos Hosts</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-green-700">Hosts Disponíveis:</span>
+                                    <span id="numberOfHosts" class="text-green-600 font-semibold"></span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-green-700">Primeiro IP Utilizável:</span>
+                                    <span id="firstUsableIp" class="text-green-600 font-semibold"></span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-green-700">Último IP Utilizável:</span>
+                                    <span id="lastUsableIp" class="text-green-600 font-semibold"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-2 text-center text-white/90 py-1">
+        <p class="text-sm">Desenvolvido por Matheus Esposto Sagae</p>
+        <p class="text-sm">5° ADS - Fatec Ourinhos</p>
+    </footer>
+    
+    <script>
+        AOS.init({
+            once: true,
+            duration: 800,
+            easing: 'ease-in-out'
+        });
+
+        let debounceTimer;
+        const ipInput = document.getElementById('ipAddress');
+        const maskInput = document.getElementById('subnetMask');
+        const resultsDiv = document.getElementById('results');
+        const errorDiv = document.getElementById('errorMessage');
+
+        function calculateFirstUsableIp(networkAddress) {
+            const octets = networkAddress.split('.');
+            octets[3] = (parseInt(octets[3]) + 1).toString();
+            return octets.join('.');
+        }
+
+        function calculateLastUsableIp(broadcastAddress) {
+            const octets = broadcastAddress.split('.');
+            octets[3] = (parseInt(octets[3]) - 1).toString();
+            return octets.join('.');
+        }
+
+        function updateResults() {
+            const ipAddress = ipInput.value.trim();
+            const subnetMask = maskInput.value.trim();
+
+            if (!ipAddress || !subnetMask) {
+                resultsDiv.classList.add('hidden');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('ipAddress', ipAddress);
+            formData.append('subnetMask', subnetMask);
+
+            fetch('/calculate', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    errorDiv.classList.add('hidden');
+                    resultsDiv.classList.remove('hidden');
+
+                    document.getElementById('networkAddress').textContent = data.networkAddress;
+                    document.getElementById('broadcastAddress').textContent = data.broadcastAddress;
+                    document.getElementById('numberOfHosts').textContent = data.numberOfHosts;
+                    document.getElementById('cidr').textContent = `/${data.cidr}`;
+                    document.getElementById('networkClass').textContent = data.networkClass;
+                    document.getElementById('firstUsableIp').textContent = calculateFirstUsableIp(data.networkAddress);
+                    document.getElementById('lastUsableIp').textContent = calculateLastUsableIp(data.broadcastAddress);
+                } else {
+                    errorDiv.textContent = 'Formato de endereço IP ou máscara de sub-rede inválido';
+                    errorDiv.classList.remove('hidden');
+                    resultsDiv.classList.add('hidden');
+                }
+            })
+            .catch(error => {
+                errorDiv.textContent = 'Ocorreu um erro. Por favor, tente novamente.';
+                errorDiv.classList.remove('hidden');
+                resultsDiv.classList.add('hidden');
+            });
+        }
+
+        function debounce(func, delay) {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(func, delay);
+        }
+
+        ipInput.addEventListener('input', () => debounce(updateResults, 300));
+        maskInput.addEventListener('input', () => debounce(updateResults, 300));
+        ipInput.addEventListener('keyup', () => debounce(updateResults, 300));
+        maskInput.addEventListener('keyup', () => debounce(updateResults, 300));
+    </script>
+</body>
+</html> 

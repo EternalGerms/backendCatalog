@@ -1,0 +1,3 @@
+com\example\ipcalculator\controller\IpCalculatorController.class
+com\example\ipcalculator\IpCalculatorApplication.class
+com\example\ipcalculator\service\IpCalculatorService.class
